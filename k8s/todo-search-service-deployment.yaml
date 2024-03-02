@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: todo
@@ -24,7 +24,7 @@ spec:
       initContainers:
       - name: init-elastic
         image: busybox
-        command: ['sh', '-c', 'until nslookup todo-elastic; do echo waiting for ElasticSearch; sleep 2; done;']
+        command: ['sh', '-c', 'until wget -O - http://todo-elastic:9200 >/dev/null; do echo waiting for ElasticSearch; sleep 2; done;']
       containers:
       - name: todo-search-service
         image: gravitonian/todo-search-service:1.0

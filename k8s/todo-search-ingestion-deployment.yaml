@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: todo
@@ -24,10 +24,17 @@ spec:
       initContainers:
       - name: init-rabbitmq
         image: busybox
-        command: ['sh', '-c', 'until nslookup todo-rabbitmq; do echo waiting for RabbitMQ; sleep 2; done;']
+        command:
+          - /bin/sh
+          - -c
+          - >
+            until nc -z todo-rabbitmq 5672; do
+              echo "Waiting for RabbitMQ...";
+              sleep 2;
+            done;
       - name: init-elastic
         image: busybox
-        command: ['sh', '-c', 'until nslookup todo-elastic; do echo waiting for ElasticSearch; sleep 2; done;']
+        command: ['sh', '-c', 'until wget -O - http://todo-elastic:9200 >/dev/null; do echo waiting for ElasticSearch; sleep 2; done;']
       containers:
       - name: todo-search-ingestion
         image: gravitonian/todo-search-ingestion:1.0

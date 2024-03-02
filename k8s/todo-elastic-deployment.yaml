@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: todo
@@ -18,9 +18,18 @@ spec:
         todo-app-pod: todo-elastic
     spec:
       restartPolicy: Always
+      initContainers:
+      - name: fix-permissions
+        image: busybox
+        command: ['sh', '-c', 'chown -R 1000:1000 /usr/share/elasticsearch/data']
+        volumeMounts:
+        - name: elastic-data
+          mountPath: /usr/share/elasticsearch/data
       containers:
       - name: todo-elastic
-        image: elasticsearch:6.6.1
+        image: elasticsearch:7.17.16
+        securityContext:
+          runAsUser: 1000
         env:
         - name: discovery.type
           value: single-node
